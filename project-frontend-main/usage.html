@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Home</title>
+  <!-- Add Font Awesome CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <script src="https://cdn.anychart.com/releases/8.0.0/js/anychart-base.min.js"></script>
+  <style>
+  /* Style the Nav Bar */
+  nav {
+    background-color: #f2f2f2;
+    padding: 10px;
+    width: 200px;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: auto;
+    list-style: none;
+  }
+  nav ul {
+    padding-left: 0;
+  }
+  /* Style the links inside the Nav Bar */
+  nav a {
+    display: block;
+    color: #000;
+    padding: 8px 16px;
+    text-decoration: none;
+  }
+  /* Change the color of links on the hover */
+  nav a:hover {
+    background-color: #ddd;
+    color: #000;
+  }
+  /* Style the Clock on the left-hand side */
+  .clock {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  /* Style the Alerts on the right-hand side */
+  .alerts {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+  }
+  .alerts span {
+    margin-bottom: 5px;
+  }
+  /* Style the Alert boxes */
+  .alert-box {
+    background-color: red;
+    color: white;
+    padding: 5px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+  }
+  /* Style each Alert */
+  .back-door-alert, .garage-door-alert, .window-alert {
+    background-color: rgba(203, 93, 93, 0.915);
+    color: white;
+    padding: 5px;
+    border-radius: 10px;
+    border: 2px solid rgba(203, 93, 93, 0.915);
+  }
+  /* Style the Temperature */
+  .temperature {
+    font-size: 200px;
+  }
+  /* Style the Up/Down Arrows */
+  .up-down-arrows {
+    position: fixed;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+  }
+  .up-down-arrows button {
+    background-color: #ccc;
+    border-radius: 50%;
+    border: none;
+    padding: 10px;
+  }
+  .up-down-arrows i {
+    font-size: 20px;
+    padding: 2px;
+  }
+  /* Style the Up/Down Arrows on the Temperature */
+  .up-down-arrows .temperature {
+    margin-bottom: 10px;
+    font-size: 100px;
+  }
+  .up-down-arrows div {
+    display: flex;
+    align-items: center;
+  }
+  /* Style the Switch on the right-hand side */
+  .switch-container {
+    position: fixed;
+    top: 60%;
+    right: 10px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+  }
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+    margin-bottom: 10px;
+  }
+  .switch input {
+    display: none;
+  }
+  /* Style the Slider on the right-hand side */
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    border-radius: 34px;
+    transition: .4s;
+  }
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    border-radius: 50%;
+    transition: .4s;
+  }
+  input:checked + .slider {
+    background-color: #2196F3;
+  }
+  input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+  }
+  input:not(:checked) + .slider {
+    background-color: #ee3535;
+  }
+  input:checked + .slider:before {
+    transform: translateX(26px);
+  }
+  /* Style the footer for Economics Minor */
+  #footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #f5f5f5;
+    padding: 10px;
+    text-align: center;
+  }
+  /* Style the Chart for the Usage */
+  #chart-container {
+    display: fixed;
+    top: 50%;
+    transform: translate(50%, 50%);
+    width: 50%;
+    height: 50%;
+    border: 1px solid black;
+  }
+  #myChart {
+    width: 50%;
+    height: 50%;
+  }
+  #toggleDataBtn {
+    display: block;
+    width: 50%;
+    padding: 10px;
+    background-color: #4CAF50;
+    transform: translate(50%, 50%);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+  #toggleDataBtn:hover {
+    background-color: #3e8e41;
+  }
+  #toggleDataBtn2 {
+    display: block;
+    width: 50%;
+    padding: 10px;
+    background-color: #414ad1;
+    transform: translate(50%, 50%);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+  #toggleDataBtn2:hover {
+    background-color: #414ad1;
+  }
+  </style>
+  <div>
+    <button id="toggleDataBtn" onclick="toggleData()">Last Month's Data</button>
+    <button id="toggleDataBtn2" onclick="toggleData()">Two Months Ago Data</button>
+  </div>
+
+  <div id="chart-container">
+    <canvas id="myChart"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+  const BASE_URL = 'http://127.0.0.1:5000'
+
+  window.addEventListener('load', onWindowLoad);
+
+  function onWindowLoad() {
+  getTemp();
+  getMode();
+}
+  function getTemp() {
+    var setTemp = document.getElementById('temperature');
+    var climateTemp = document.getElementById('climateTemp');
+    const incrase_url = BASE_URL + '/get-temp';
+
+  // Make the API request using fetch
+  fetch(incrase_url, {method: 'GET'})
+    .then(response => {
+      // Check if the response is successful (status code in the range 200-299)
+      if (!response.ok) {
+        throw new Error(`An error occurred: ${response.statusText}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Do something with the JSON data
+      setTemp.innerHTML = data.set_temp;
+      climateTemp.innerHTML = data.curr_temp;
+    })
+    .catch(error => {
+      // Handle errors in the request or JSON parsing
+      console.error('An error occurred while fetching the API data:', error);
+    });
+}
+
+  function getMode() {
+    var modeSwitch = document.getElementById('modeSwitch');
+    const incrase_url = BASE_URL + '/get-mode';
+
+// Make the API request using fetch
+  fetch(incrase_url, {method: 'GET'})
+    .then(response => {
+      // Check if the response is successful (status code in the range 200-299)
+      if (!response.ok) {
+        throw new Error(`An error occurred: ${response.statusText}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Do something with the JSON data
+      if (data.mode === 'ac') {
+        modeSwitch.checked = true;
+      } else if (data.mode === 'heat') {
+        modeSwitch.checked = false;
+      } else if (data.mode === 'off') {
+        modeSwitch.checked = false;
+      }
+    })
+    .catch(error => {
+      // Handle errors in the request or JSON parsing
+      console.error('An error occurred while fetching the API data:', error);
+    });
+  }
+
+  const ctx = document.getElementById('myChart').getContext('2d');
+    let powerData = generateRandomData(12, 100, 300);
+    let waterData = generateRandomData(12, 50, 200);
+    let priceData = generateRandomData(12, 150, 250);
+
+  const lastPowerData = generateRandomData(1, 100, 300);
+  const lastWaterData = generateRandomData(1, 50, 200);
+  const lastPriceData = generateRandomData(1, 150, 250);
+
+  const secondLastPowerData = generateRandomData(1, 100, 300);
+  const secondLastWaterData = generateRandomData(1, 50, 200);
+  const secondLastPriceData = generateRandomData(1, 150, 250); 
+
+  let chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      datasets: [
+        {
+          label: 'Power Usage',
+          data: powerData,
+          borderColor: 'rgb(255, 99, 132)',
+          fill: false
+        },
+        {
+          label: 'Water Usage',
+          data: waterData,
+          borderColor: 'rgb(54, 162, 235)',
+          fill: false
+        },
+        {
+          label: 'Price Usage',
+          data: priceData,
+          borderColor: 'rgb(75, 192, 192)',
+          fill: false
+        }
+      ]
+    },
+    options: {
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: true
+          }
+        }]
+      }
+    }
+  });
+  function toggleData() {
+    if (powerData.length === 12) {
+      powerData.pop();
+      waterData.pop();
+      priceData.pop();
+      powerData.unshift(lastPowerData[0]);
+      waterData.unshift(lastWaterData[0]);
+      priceData.unshift(lastPriceData[0]);
+    } else if (powerData.length === 11) {
+      powerData.pop();
+      waterData.pop();
+      priceData.pop();
+      powerData.unshift(secondLastPowerData[0]);
+      waterData.unshift(secondLastWaterData[0]);
+      priceData.unshift(secondLastPriceData[0]);
+    } else {
+      powerData.shift();
+      waterData.shift();
+      priceData.shift();
+      powerData.push(lastPowerData[0]);
+      waterData.push(lastWaterData[0]);
+      priceData.push(lastPriceData[0]);
+    }
+    chart.update();
+  }
+  function generateRandomData(numPoints, minVal, maxVal) {
+    const data = [];
+    for (let i = 0; i < numPoints; i++) {
+      const value = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
+      data.push(value);
+    }
+    return data;
+  }
+// A function that updates the clock every second
+function updateClock() {
+    var now = new Date();
+    var hours = now.getHours();
+    var minutes = now.getMinutes();
+	var seconds = now.getSeconds();
+	var ampm = hours >= 12 ? 'PM' : 'AM';
+	hours = hours % 12;
+	hours = hours ? hours : 12; 
+	var timeString = hours + ':' + (minutes < 10 ? '0' : '') + minutes + ':' + (seconds < 10 ? '0' : '') + seconds + ' ' + ampm;
+    document.getElementById('clock').innerHTML = timeString;
+    setTimeout(updateClock, 1000);
+}
+
+function increaseTemp() {
+  var temp = document.getElementById('temperature');
+  const incrase_url = BASE_URL + '/change-temp/' + (parseInt(temp.innerHTML) + 1);
+
+  // Make the API request using fetch
+  fetch(incrase_url, {method: 'POST'})
+    .then(response => {
+      // Check if the response is successful (status code in the range 200-299)
+      if (!response.ok) {
+        throw new Error(`An error occurred: ${response.statusText}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Do something with the JSON data
+      temp.innerHTML = parseInt(temp.innerHTML) + 1;
+    })
+    .catch(error => {
+      // Handle errors in the request or JSON parsing
+      console.error('An error occurred while fetching the API data:', error);
+    });
+}
+
+function decreaseTemp() {
+  var temp = document.getElementById('temperature');
+  const incrase_url = BASE_URL + '/change-temp/' + (parseInt(temp.innerHTML) - 1);
+
+  // Make the API request using fetch
+  fetch(incrase_url, {method: 'POST'})
+  .then(response => {
+      // Check if the response is successful (status code in the range 200-299)
+      if (!response.ok) {
+        throw new Error(`An error occurred: ${response.statusText}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Do something with the JSON data
+      temp.innerHTML = parseInt(temp.innerHTML) - 1;
+    })
+    .catch(error => {
+      // Handle errors in the request or JSON parsing
+      console.error('An error occurred while fetching the API data:', error);
+    });
+}
+
+function changeMode() {
+  var modeSwitch = document.getElementById('modeSwitch');
+  const url = BASE_URL + '/change-mode/' + (modeSwitch.checked ? 'ac' : 'heat');
+
+  // Make the API request using fetch
+  fetch(url, {method: 'POST'})
+    .then(response => {
+      // Check if the response is successful (status code in the range 200-299)
+      if (!response.ok) {
+        throw new Error(`An error occurred: ${response.statusText}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Do something with the JSON data
+     console.log(data)
+    })
+    .catch(error => {
+      // Handle errors in the request or JSON parsing
+      console.error('An error occurred while fetching the API data:', error);
+    });
+}
+</script>
+
+</head>
+
+<body onload="updateClock()">
+    <!-- Nav Menu -->
+    <nav>
+        <ul>
+            <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="rooms.html"><i class="fas fa-bed"></i> Rooms</a></li>
+            <li><a href="usage.html"><i class="fas fa-chart-line"></i> Usage</a></li>
+        </ul>
+    </nav>
+
+    <div id="footer">
+      <p>Estimiated future costs accounting for appropriate inflation</p>
+      <p>Monthly:</p>
+      <p>Yearly:</p>
+    </div>
+
+	<!-- Clock -->
+	<div class="clock">
+		<span id="clock"></span>
+	</div>
+
+	<!-- Alerts -->
+	<div class="alerts">
+		<span class="back-door-alert">Back Door open</span>
+		<span class="garage-door-alert">Garage Door open</span>
+		<span class="window-alert">Window open</span>
+	</div> 
+
+    <!-- AC System -->
+    <div class="up-down-arrows">
+        <div><span id="temperature">72</span><span>&deg;</span></div>
+        <div><span>/</span></div>
+        <div><small id="climateTemp">70</small></div>
+        <button onclick="increaseTemp()"><i class="fas fa-arrow-up"></i></button>
+        <button onclick="decreaseTemp()"><i class="fas fa-arrow-down"></i></button>
+    </div>
+
+    <!-- On/Off Switch -->
+    <div class="switch-container">
+        <label class="switch">
+            <input onclick="changeMode()" id="modeSwitch" type="checkbox">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+</body>
+</html>
